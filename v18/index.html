@@ -100,7 +100,12 @@ window.onkeydown=e=>{keys.add(e.code);if(['ArrowUp','ArrowDown','ArrowLeft','Arr
 const loader=new GLTFLoader();
 loader.load('./NHA_V18_CHI_TIET_KT06_KT09.glb',gltf=>{
  model=gltf.scene;scene.add(model);
- model.traverse(obj=>{if(obj.isMesh){const name=obj.name||obj.parent?.name||'';let f=meshFloor(obj); if(f<0){const m=(obj.parent?.name||'').match(/^F([0-3])__/);f=m?+m[1]:0} obj.userData.floor=f;obj.userData.category=meshCategory(obj);obj.userData.originalY=obj.position.y;obj.frustumCulled=false;meshes.push(obj)}});
+ model.traverse(obj=>{if(obj.isMesh){const name=obj.name||obj.parent?.name||'';let f=meshFloor(obj); if(f<0){const m=(obj.parent?.name||'').match(/^F([0-3])__/);f=m?+m[1]:0} obj.userData.floor=f;obj.userData.category=meshCategory(obj);obj.userData.originalY=obj.position.y;obj.frustumCulled=false;
+ if(['SHELL','SHELL_NEAR','CORE','BATH_WALL','CABINET','WARDROBE','DOOR','LIFT','MEDIA','SLAB','BALCONY'].includes(obj.userData.category)){
+  const edge=new THREE.LineSegments(new THREE.EdgesGeometry(obj.geometry,42),new THREE.LineBasicMaterial({color:0x435761,transparent:true,opacity:.31,depthTest:true,depthWrite:false}));
+  edge.renderOrder=1;obj.add(edge);
+ }
+ meshes.push(obj)}});
  console.log('V18 loaded',meshes.length,'meshes',new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3()).toArray());
  loading.remove();resetCamera();setFloor(1);
 },evt=>{if(evt.total){loading.querySelector('span').textContent='Đang tải GLB · '+Math.round(evt.loaded*100/evt.total)+'%'}},err=>{console.error(err);loading.classList.add('error');loading.querySelector('strong').textContent='Không tải được mô hình GLB';loading.querySelector('span').textContent='Hãy mở website bằng Safari/Chrome qua HTTPS, không mở riêng file HTML trong Messenger.'});
