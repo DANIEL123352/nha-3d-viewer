@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NHÀ V20 | Mô hình kiến trúc tương tác theo PDF</title>
+<meta name="theme-color" content="#102638"><link rel="icon" href="data:,">
+<style>
+:root{--ink:#24383d;--soft:#667f91;--teal:#456573;--line:#d8e4ea;--bg:#eeeae5;--paper:#fff;--accent:#d7e8f1;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg)}button,select{font:inherit}button{cursor:pointer}header{padding:13px 18px;background:#17262c;color:white;display:flex;justify-content:space-between;gap:12px;align-items:center}header h1{font-size:17px;line-height:1.25;margin:0}header small{display:block;color:#c4d9e7;margin-top:5px;font-size:11px;letter-spacing:.05em}header .version{font-size:11px;border:1px solid #466780;padding:8px 10px;border-radius:9px;white-space:nowrap}
+.layout{display:grid;grid-template-columns:274px minmax(0,1fr);gap:12px;padding:12px;max-width:1550px;margin:auto}.controls{display:flex;flex-direction:column;gap:12px}.panel{background:var(--paper);border-radius:13px;border:1px solid var(--line);box-shadow:0 3px 14px #193d4a10;overflow:hidden}.panel-inner{padding:15px}.panel h2{font-size:14px;margin:0 0 11px}.panel p{font-size:12px;line-height:1.55;color:var(--soft);margin:8px 0}.tag{display:inline-flex;align-items:center;font-size:10px;font-weight:700;background:#e7f2f6;border-radius:20px;padding:5px 9px;margin-bottom:10px;color:#32657b}
+.stack{display:flex;gap:7px;flex-wrap:wrap}.seg{flex:1 1 45%;min-height:38px;background:#f6f9fb;color:#254b61;border:1px solid #ccdbe5;border-radius:9px;padding:7px 9px;font-size:12px;font-weight:650}.seg.active,.seg[aria-pressed=true]{color:white;background:#235c79;border-color:#235c79}.seg.wide{flex:1 1 100%}.seg.secondary{background:#e8f1f6}.seg.secondary.active{background:#235c79}.switch{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px 0;border-bottom:1px solid #edf2f5;font-size:12px}.switch:last-child{border:0}.switch input{width:20px;height:20px;accent-color:#236684}.status{font-size:11px;color:#5b7485;line-height:1.5}.viewer{height:min(81vh,900px);min-height:570px;position:relative;background:linear-gradient(#f8f7f5,#efeeea);border-radius:13px;overflow:hidden;border:1px solid #dae4eb;touch-action:none}.viewer canvas{display:block;width:100%;height:100%;touch-action:none}#messages{position:absolute;left:16px;top:16px;border-radius:9px;background:#ffffffed;padding:10px 12px;box-shadow:0 2px 9px #2344;font-size:12px;max-width:300px;pointer-events:none}#messages strong{display:block;margin-bottom:3px}#messages span{color:#698192;font-size:11px}#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#f1f6f8;z-index:15;text-align:center;flex-direction:column;gap:8px;padding:20px}#loading strong{font-size:17px}#loading span{font-size:12px;color:#5c7282}#loading.error{background:#f5f8fa}#quickFloors{display:none;position:absolute;left:9px;right:9px;bottom:50px;gap:5px;overflow-x:auto;z-index:9;scrollbar-width:none}#quickFloors button{flex:1 0 auto;background:#ffffffed;border:1px solid #b4cbd9;color:#255877;font-size:11px;font-weight:750;padding:8px 9px;border-radius:8px;min-height:34px}#quickFloors button.active{background:#235c79;color:white}#toolbar{position:absolute;top:16px;right:15px;display:flex;gap:6px;z-index:4}#toolbar button{width:39px;height:39px;border-radius:9px;border:1px solid #d3e2e9;background:#fffffff2;color:#1c4b68;font-size:18px;font-weight:bold;box-shadow:0 2px 8px #0001}#dimLabels{position:absolute;inset:0;pointer-events:none;z-index:7;overflow:hidden}#dimLabels .measure{position:absolute;transform:translate(-50%,-50%);background:#f6fbffed;border:1px solid #9bbccd;border-radius:5px;color:#265b79;font-size:11px;font-weight:800;white-space:nowrap;padding:4px 6px;box-shadow:0 1px 4px #0002}#modepill{position:absolute;bottom:14px;right:14px;color:#425f70;font-size:11px;background:#ffffffed;border-radius:8px;padding:8px 10px;pointer-events:none}#walkHud{position:absolute;inset:0;display:none;pointer-events:none;touch-action:none}#walkHud.active{display:block}#viewer.expanded{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;max-height:none!important;z-index:99!important;border-radius:0!important}#viewer.expanded #quickFloors{display:flex}#viewer.isWalking #quickFloors{display:none!important}#viewer.isWalking #modepill{display:none}#viewer.expanded #modepill{display:none}#joystick{position:absolute;bottom:25px;left:19px;width:112px;height:112px;border-radius:50%;background:#1b536c88;border:2px solid #fff9;pointer-events:auto;touch-action:none}#nub{position:absolute;left:35px;top:35px;width:40px;height:40px;border-radius:50%;background:white;box-shadow:0 2px 9px #0004;pointer-events:none}#cross{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:25px;color:white;text-shadow:0 0 4px #123;pointer-events:none}#walkText{position:absolute;bottom:26px;right:16px;background:#284b5bbb;color:white;font-size:11px;border-radius:10px;padding:9px 11px;max-width:170px}.actionbar{display:flex;gap:7px;flex-wrap:wrap;padding:12px 15px;border-top:1px solid var(--line);background:white}.actionbar .download{display:inline-flex;align-items:center;border:1px solid #cadde9;border-radius:8px;background:#f4f8fa;padding:9px 11px;font-size:11px;font-weight:700;color:#225778;text-decoration:none}.actionbar button{border:1px solid #cadde9;border-radius:8px;background:#f4f8fa;padding:9px 10px;font-size:11px;font-weight:700;color:#225778}.notice{border-left:3px solid #bb975c;background:#fbf7ed;border-radius:5px;padding:10px;margin:10px 0 0;font-size:11px;color:#776247;line-height:1.55}.modelinfo{padding:10px 15px;font-size:11px;color:#607b8d;line-height:1.5;background:#f8fbfd}.download{font-size:12px;display:block;padding:8px 0;color:#266584}#details{font-size:12px;color:#546d7e;line-height:1.6}#details td{padding:4px 6px;border-bottom:1px solid #eff3f6}#details td:last-child{font-weight:700;color:#215773;text-align:right}#details table{width:100%;border-collapse:collapse}
+@media(max-width:800px){.layout{display:flex;flex-direction:column;gap:8px;padding:7px}.layout>section.panel{order:0}.controls{order:1;display:grid;grid-template-columns:1fr 1fr;gap:8px}.viewer{height:70svh;min-height:440px;max-height:800px}#quickFloors{display:flex}.version{display:none}header{padding:11px 13px}header h1{font-size:15px}.panel-inner{padding:11px}.panel h2{font-size:13px}.seg{font-size:11px;min-height:40px}#messages{top:10px;left:10px;max-width:58%;padding:7px 9px;font-size:11px}#toolbar{top:10px;right:10px}#toolbar button{width:36px;height:36px}#details{display:none}}
+@media(max-width:520px){.controls{grid-template-columns:1fr 1fr}.viewer{height:70svh;min-height:430px}.tag{font-size:9px}.notice{font-size:10px}}
+</style>
+<script type="importmap">{"imports":{"three":"../vendor/three.module.js"}}</script>
+</head>
+<body>
+<header><div><h1>NHÀ V20 · ARCHITECTURAL CUTAWAY</h1><small>MÔ HÌNH 3D THẬT · CẮT LỚP NHIỀU TẦNG · THEO PDF KT06–KT09</small></div><div class="version">V20 · DESKTOP HIGH DETAIL</div></header>
+<div class="layout">
+<aside class="controls">
+<section class="panel"><div class="panel-inner"><span class="tag">BỐ CỤC TỪ PDF GỐC</span><h2>Chọn tầng</h2><div class="stack" id="floors"><button class="seg wide active" data-floor="all">Toàn bộ ngôi nhà</button><button class="seg" data-floor="0">Tầng trệt</button><button class="seg" data-floor="1">Lầu 1</button><button class="seg" data-floor="2">Sân thượng</button><button class="seg" data-floor="3">Mái tum</button></div><p>Dựng từ hồ sơ KT06–KT09: ngang 6.000 mm, dài 18.850 mm; chia 7.000 + 4.150 + 7.700 mm.</p></div></section>
+<section class="panel"><div class="panel-inner"><h2>Chế độ xem</h2><div class="stack" id="views"><button class="seg active" data-view="cutaway">Cắt lớp</button><button class="seg" data-view="closed">Nhà kín</button><button class="seg" data-view="exploded">Tách tầng</button><button class="seg" data-view="walk">🚶 Đi trong nhà</button></div><div class="switch"><label for="roof">Hiển thị mái tum (ẩn sẵn để thấy nội thất)</label><input id="roof" type="checkbox"></div><div class="switch"><label for="nearwall">Hiển thị tường phía gần</label><input id="nearwall" type="checkbox"></div><div class="switch"><label for="furn">Hiển thị nội thất</label><input id="furn" type="checkbox" checked></div><div class="switch"><label for="glass">Hiển thị kính và rèm</label><input id="glass" type="checkbox" checked></div><div class="switch"><label for="ruler">Thước đo 3D theo trục PDF</label><input id="ruler" type="checkbox"></div></div></section>
+<section class="panel"><div class="panel-inner"><h2>Tham quan nội thất</h2><div class="stack" id="spots"><button class="seg" data-spot="living">Phòng khách</button><button class="seg" data-spot="kitchen">Bếp & bàn ăn</button><button class="seg" data-spot="bed1">Phòng ngủ 1</button><button class="seg" data-spot="bed2">Phòng ngủ 2</button><button class="seg" data-spot="bed3">Phòng ngủ 3</button><button class="seg" data-spot="wc">WC</button><button class="seg" data-spot="terrace">Sân thượng</button><button class="seg" data-spot="core">Thang máy</button></div><p>Trong chế độ đi bộ: dùng núm tròn bên trái để di chuyển, vuốt trên hình để nhìn quanh.</p></div></section>
+<section class="panel"><div class="panel-inner" id="details"><h2>Thông số PDF</h2><table><tr><td>Ngang nhà</td><td>6.000 mm</td></tr><tr><td>Dài khối nhà</td><td>18.850 mm</td></tr><tr><td>Nhịp sau</td><td>7.000 mm</td></tr><tr><td>Nhịp thang</td><td>4.150 mm</td></tr><tr><td>Nhịp trước</td><td>7.700 mm</td></tr><tr><td>Ban công</td><td>1.400 mm</td></tr><tr><td>Mái vượt trục 3</td><td>1.100 mm</td></tr></table></div></section>
+</aside>
+<section class="panel" style="align-self:start">
+<div class="viewer" id="viewer"><div id="loading"><strong>Đang tải mô hình kiến trúc V20…</strong><span>Mô hình gồm 1.604 đối tượng 3D, các phòng và nội thất giữ đúng khu chức năng PDF.</span></div><div id="messages"><strong id="viewTitle">Toàn nhà · phối cảnh cắt lớp</strong><span id="viewDesc">Vuốt để xoay · chụm để phóng to · chọn tầng xem nội thất</span></div><div id="toolbar"><button id="fullscreen" title="Toàn màn hình">⛶</button><button id="reset" title="Về góc chuẩn">⌂</button><button id="plus" title="Phóng to">+</button><button id="minus" title="Thu nhỏ">−</button></div><div id="quickFloors"><button data-quickfloor="all" class="active">Toàn nhà</button><button data-quickfloor="0">Trệt</button><button data-quickfloor="1">Lầu 1</button><button data-quickfloor="2">Sân thượng</button><button data-quickfloor="3">Mái tum</button></div><div id="dimLabels"></div><div id="modepill">V20 · Cắt lớp nội thất cao cấp</div><div id="walkHud"><div id="cross">+</div><div id="joystick"><div id="nub"></div></div><div id="walkText">Giữ núm bên trái để đi. Vuốt trên nhà để nhìn quanh.</div></div></div>
+<div class="actionbar"><button id="viewHome">Về toàn nhà</button><button id="stairs">Đến lõi thang</button><button id="backOut">Thoát góc nhìn thứ nhất</button><button id="capture">Lưu ảnh màn hình</button><a class="download" href="./NHA_V20_CUTAWAY_CO_NOI_THAT.glb" download>GLB 3D</a><a class="download" href="./NHA_V20_CAD_3D_CHI_TIET.dxf" download>CAD DXF</a></div>
+<div class="modelinfo"><strong>V20:</strong> V20 dùng texture PBR được tạo mới, nội thất 3D có hình học chi tiết hơn, cùng mặt bằng theo KT06–KT09. V20 bổ sung vật liệu và nội thất minh họa. Tường, cửa, nội thất và chất liệu chưa có đầy đủ kích thước trong hồ sơ là <b>thiết kế minh họa</b>. Cao độ KT10/KT11 chưa thống nhất, bản này dùng KT10 để trình bày. Không dùng làm hồ sơ thi công. Ảnh mẫu tham khảo là hình phối cảnh, không phải thiết kế xây dựng nhà bạn.</div>
+</section>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './GLTFLoader.js';
+import { OrbitControls } from './OrbitControls.js';
+const viewer=document.getElementById('viewer'), loading=document.getElementById('loading'), messages=document.getElementById('viewTitle'), desc=document.getElementById('viewDesc');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.05;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+renderer.setClearColor(0xf7f7f4);renderer.shadowMap.enabled=true;viewer.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+scene.background=new THREE.Color('#f7f7f4');
+
+scene.add(new THREE.HemisphereLight(0xfffaf2,0x8e9697,1.06));
+scene.add(new THREE.AmbientLight(0xffffff,.12));
+const light=new THREE.DirectionalLight(0xffefd8,2.05);
+light.position.set(8,24,17);
+light.castShadow=true;light.shadow.mapSize.set(window.innerWidth<800?1024:2048,window.innerWidth<800?1024:2048);
+light.shadow.camera.left=-30;light.shadow.camera.right=30;light.shadow.camera.top=30;light.shadow.camera.bottom=-30;
+light.shadow.camera.near=.5;light.shadow.camera.far=65;light.shadow.bias=-.00016;
+light.shadow.normalBias=.02;
+scene.add(light);
+const fill=new THREE.DirectionalLight(0xdcebf6,.67);
+fill.position.set(-13,11,-8);scene.add(fill);
+const rim=new THREE.DirectionalLight(0xffffff,.39);
+rim.position.set(4,6,-14);scene.add(rim);
+const camera=new THREE.PerspectiveCamera(42,1,.045,175);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.07;controls.minDistance=2.8;controls.maxDistance=83;controls.maxPolarAngle=Math.PI*.49;controls.target.set(9.4,5.4,3);
+let model,meshes=[],floor='all',view='cutaway',showRoof=false,nearwall=false,showFurniture=true,showGlass=true;
+let rulerOn=false,dimGroup=new THREE.Group(),dimTexts=[];scene.add(dimGroup);let walking=false,step={x:0,z:0,id:null},yaw=0,pitch=-.12,velocityTime=performance.now();
+const walkPos=new THREE.Vector3(16.5,2.47,2.7);const keys=new Set();const personalCamera=new THREE.Object3D();
+const floorNames=['Tầng trệt','Lầu 1','Sân thượng','Mái tum'];
+const levels=[.8,4.7,8.3,11.7];let walkFloor=0;
+const sourceZup=true; // trimesh exports glTF orientation already transformed into Y-up; see model bounds validation.
+function resize(){const w=viewer.clientWidth,h=viewer.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(viewer);resize();
+const spots={living:[0,18.05,3.45,.65],kitchen:[0,5.25,3.9,1.57],bed1:[1,4.6,3.15,0],bed2:[1,16.4,3.1,0],bed3:[2,4.6,3.1,0],wc:[1,5.43,1.32,-1.4],terrace:[2,16.15,3.0,0],core:[0,9.2,3.3,-1.57]};
+function meshFloor(m){const n=m.name||'';const match=n.match(/^F([0-3])__/);return match?Number(match[1]):-1;}
+function meshCategory(m){const n=m.name||'';const match=n.match(/^F[0-3]__([^_]+(?:_[^_]+)?)__/); // fallback, category recognized by prefixes below
+const tail=n.replace(/^F[0-3]__/, '');return tail.split('__')[0]||'';}
+const DIM_INFO=[{a:[0,0,6.62],b:[7,0,6.62],label:'7.000 mm'}, {a:[7,0,6.62],b:[11.15,0,6.62],label:'4.150 mm'}, {a:[11.15,0,6.62],b:[18.85,0,6.62],label:'7.700 mm'}, {a:[-0.70,0,0],b:[-0.70,0,6],label:'6.000 mm'}];
+const dimHost=document.getElementById('dimLabels');
+for(const entry of DIM_INFO){const div=document.createElement('div');div.className='measure';div.textContent=entry.label;dimHost.appendChild(div);dimTexts.push(div)}
+function rebuildDimensions(){while(dimGroup.children.length){const m=dimGroup.children.pop();m.geometry?.dispose()}const level=walking?levels[walkFloor]:(floor==='all'?levels[0]:levels[Math.min(3,floor)]);for(const d of DIM_INFO){const pts=[...d.a,...d.b];pts[1]=level;pts[4]=level;const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...pts.slice(0,3)),new THREE.Vector3(...pts.slice(3,6))]);dimGroup.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0x2a6992,depthTest:false})));}dimGroup.visible=rulerOn&&!walking;dimHost.style.display=rulerOn&&!walking?'block':'none'}
+function positionDimensions(){if(!rulerOn||walking)return;const w=viewer.clientWidth,h=viewer.clientHeight,level=floor==='all'?levels[0]:levels[Math.min(3,floor)];DIM_INFO.forEach((d,i)=>{const x=(d.a[0]+d.b[0])/2,z=(d.a[2]+d.b[2])/2;const v=new THREE.Vector3(x,level,z).project(camera);const el=dimTexts[i];el.style.left=((v.x+1)*w/2)+'px';el.style.top=((1-v.y)*h/2)+'px';el.style.visibility=(v.z>-1&&v.z<1&&v.x>-1&&v.x<1&&v.y>-1&&v.y<1)?'visible':'hidden'})}
+function updateScene(){if(!model)return;
+const exploded=view==='exploded'&&!walking;
+const visibleFloor=walking?walkFloor:floor;
+for(const mesh of meshes){const f=mesh.userData.floor,cat=mesh.userData.category;
+ const isFurn=!['SHELL','SHELL_NEAR','SLAB','STRUCTURE','CORE','LIFT','GLASS','FRAME','ROOF','ROOF_ACCESS','STAIR','STAIR_RAIL','DOOR','HANDLE','BALCONY','RAILING','RAILING_GLASS','FINISH','BATH_WALL','TERRACE','EXTERIOR'].includes(cat);
+ let vis=(visibleFloor==='all'||f===visibleFloor);
+ if(f===3&&!showRoof && !(floor===3))vis=false;
+ if(cat==='SHELL_NEAR' && view!=='closed' && !nearwall)vis=false;
+ if((view==='cutaway'||view==='exploded') && /^F[0-2]__(SHELL|GLASS|FRAME)__(front_pier|front_lintel|front_sliding|front_track|front_mullion)/.test(mesh.name))vis=false;
+ if((cat==='CURTAIN'||cat==='GLASS'||cat==='RAILING_GLASS')&&!showGlass)vis=false;
+ if(isFurn&&!showFurniture)vis=false;
+ if(walking && f!==walkFloor)vis=false;
+ if(walking && cat==='SHELL_NEAR')vis=true;
+ mesh.visible=vis;
+ // geometry nodes have identity-orientation under GLB; add vertical local offset for exploded look.
+ mesh.position.z=(mesh.userData.originalZ||0)+(exploded? f*1.48:0);
+ }
+ messages.textContent=walking?'Đi trong nhà · '+floorNames[walkFloor]:floor==='all'?'Toàn nhà · '+(view==='exploded'?'tách tầng':view==='closed'?'nhà kín':'phối cảnh cắt lớp'):floorNames[floor]+' · '+view;
+ desc.textContent=walking?'Vuốt để nhìn xung quanh · núm tròn để di chuyển':'Vuốt để xoay · chụm hai ngón để phóng to';
+ rebuildDimensions();viewer.classList.toggle('isWalking',walking);document.getElementById('walkHud').classList.toggle('active',walking);
+ document.querySelectorAll('[data-floor]').forEach(b=>b.classList.toggle('active',String(floor)===b.dataset.floor));document.querySelectorAll('[data-quickfloor]').forEach(b=>b.classList.toggle('active',String(floor)===b.dataset.quickfloor));
+ document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',view===b.dataset.view));
+}
+function fitOrbitView(margin=1.14){
+ if(!model || walking)return;
+ model.updateMatrixWorld(true);
+ let bounds=new THREE.Box3(),count=0;
+ for(const mesh of meshes){if(mesh.visible){bounds.expandByObject(mesh);count++;}}
+ if(!count || bounds.isEmpty())return;
+ let center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3());
+ let dir=new THREE.Vector3(.70,.70,-1.20).normalize();
+ let dist=Math.max(10,size.length()*1.8);
+ camera.position.copy(center).addScaledVector(dir,dist);
+ controls.target.copy(center);
+ camera.lookAt(center);camera.updateMatrixWorld();
+ let half=new THREE.Vector3(),pts=[];
+ bounds.getSize(half).multiplyScalar(.5);
+ for(let x of [-1,1])for(let y of [-1,1])for(let z of [-1,1]){
+  pts.push(new THREE.Vector3(center.x+x*half.x,center.y+y*half.y,center.z+z*half.z));
+ }
+ for(let step=0;step<4;step++){
+  camera.position.copy(center).addScaledVector(dir,dist);
+  camera.lookAt(center);camera.updateMatrixWorld();
+  let maxX=0,maxY=0;
+  for(const pt of pts){
+   const q=pt.clone().project(camera);
+   maxX=Math.max(maxX,Math.abs(q.x));maxY=Math.max(maxY,Math.abs(q.y));
+  }
+  const factor=Math.max(maxX,maxY)*margin;
+  dist*=Math.max(.40,Math.min(3.0,factor));
+ }
+ camera.position.copy(center).addScaledVector(dir,dist);
+ controls.target.copy(center);camera.lookAt(center);controls.update();
+}
+function resetCamera(){
+ camera.fov=42;camera.updateProjectionMatrix();walking=false;controls.enabled=true;floor='all';view='exploded';
+ updateScene();fitOrbitView(1.10);
+}
+function enterWalk(spot='living') { if(!model)return;const p=spots[spot]||spots.living;walking=true;walkFloor=p[0];walkPos.set(p[1],levels[walkFloor]+1.62,p[2]);yaw=p[3];pitch=-.10;controls.enabled=false;view='walk';updateScene(); }
+function setFloor(f){
+ if(walking){walkFloor=Number(f==='all'?0:f);walkPos.y=levels[walkFloor]+1.62;}
+ else{
+  floor=f==='all'?'all':Number(f);
+  if(floor===3){showRoof=true;document.querySelector('#roof').checked=true;}
+  if(floor==='all'){view='cutaway';}
+ }
+ updateScene();
+ if(!walking)fitOrbitView(1.10);
+}
+document.querySelectorAll('[data-floor]').forEach(b=>b.onclick=()=>setFloor(b.dataset.floor));document.querySelectorAll('[data-quickfloor]').forEach(b=>b.onclick=()=>setFloor(b.dataset.quickfloor));document.getElementById('fullscreen').onclick=()=>{viewer.classList.toggle('expanded');document.getElementById('fullscreen').textContent=viewer.classList.contains('expanded')?'✕':'⛶';resize()};
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{const v=b.dataset.view;if(v==='walk'){enterWalk();return} if(walking){walking=false;controls.enabled=true;camera.position.set(30,19,24)}view=v;floor='all';updateScene();fitOrbitView(1.11)});
+for(const [id,field] of [['roof','showRoof'],['nearwall','nearwall'],['furn','showFurniture'],['glass','showGlass']])document.getElementById(id).onchange=e=>{const val=e.target.checked;if(id==='roof')showRoof=val;else if(id==='nearwall')nearwall=val;else if(id==='furn')showFurniture=val;else showGlass=val;updateScene();if(!walking)fitOrbitView(1.12)};
+document.querySelectorAll('[data-spot]').forEach(b=>b.onclick=()=>enterWalk(b.dataset.spot));document.getElementById('ruler').onchange=e=>{rulerOn=e.target.checked;rebuildDimensions()};
+document.getElementById('backOut').onclick=resetCamera;document.getElementById('viewHome').onclick=resetCamera;document.getElementById('stairs').onclick=()=>enterWalk('core');document.getElementById('reset').onclick=resetCamera;
+document.getElementById('plus').onclick=()=>{if(walking){camera.fov=Math.max(35,camera.fov-4);camera.updateProjectionMatrix()}else{camera.position.lerp(controls.target,.14)}};
+document.getElementById('minus').onclick=()=>{if(walking){camera.fov=Math.min(85,camera.fov+4);camera.updateProjectionMatrix()}else camera.position.lerp(controls.target,-.14)};
+document.getElementById('capture').onclick=()=>{renderer.render(scene,camera);const a=document.createElement('a');a.download='nha-v20-interior-cutaway.png';a.href=renderer.domElement.toDataURL('image/png');a.click()};
+const stick=document.getElementById('joystick'),nub=document.getElementById('nub');function joyMove(e){const r=stick.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),mag=Math.hypot(dx,dy),max=r.width*.3;if(mag>max){dx*=max/mag;dy*=max/mag}step.x=dx/max;step.z=dy/max;nub.style.transform=`translate(${dx}px,${dy}px)`}
+stick.onpointerdown=e=>{step.id=e.pointerId;stick.setPointerCapture(e.pointerId);joyMove(e);e.preventDefault()};stick.onpointermove=e=>{if(e.pointerId===step.id){joyMove(e);e.preventDefault()}};const joyEnd=e=>{if(e.pointerId===step.id){step={x:0,z:0,id:null};nub.style.transform='translate(0,0)'}};stick.onpointerup=joyEnd;stick.onpointercancel=joyEnd;
+let pointer=null;renderer.domElement.onpointerdown=e=>{if(!walking)return;pointer={id:e.pointerId,x:e.clientX,y:e.clientY};renderer.domElement.setPointerCapture(e.pointerId)};renderer.domElement.onpointermove=e=>{if(!walking||pointer?.id!==e.pointerId)return;yaw-=(e.clientX-pointer.x)*.0049;pitch=Math.max(-1.2,Math.min(1.2,pitch-(e.clientY-pointer.y)*.0044));pointer.x=e.clientX;pointer.y=e.clientY};renderer.domElement.onpointerup=e=>{if(pointer?.id===e.pointerId)pointer=null};
+window.onkeydown=e=>{keys.add(e.code);if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault()};window.onkeyup=e=>keys.delete(e.code);
+
+const v20MaterialCache=new Map();
+function finishArchitecturalMaterial(mesh,category){
+ if(!mesh.material||Array.isArray(mesh.material))return;
+ const original=mesh.material;
+ const k=original.uuid+'|'+category;
+ if(!v20MaterialCache.has(k)){
+  const m=original.clone();
+  const lightness={
+    SHELL:.89,SHELL_NEAR:.90,CORE:.87,BATH_WALL:.91,SLAB:.94,
+    CABINET:.83,WARDROBE:.82,DOOR:.84,TRIM:.84,FINISH:.89,FINISH_V20:.81,
+    DINING:.86,CHAIR:.81,MEDIA:.79,SOFA:.87,BED:.93,COFFEE:.83,
+    TEXTILE:.92,RUG:.88,FRAME:.72,RAILING:.84,LIFT:.83,
+    KITCHEN_FIXTURE:.85,BATH_FITTING:.91,OUTDOOR:.85
+  };
+  if(m.color && category in lightness){
+    const isTextured=!!m.map;
+    m.color.multiplyScalar(isTextured? .96 : lightness[category]);
+  }
+  // Keep transparent glazing optically transparent, not opaque grey.
+  if(['GLASS','RAILING_GLASS'].includes(category)){
+    m.depthWrite=false;m.transparent=true;
+    m.opacity=Math.min(m.opacity,.26);m.roughness=.18;m.metalness=.07;
+  }
+  v20MaterialCache.set(k,m);
+ }
+ mesh.material=v20MaterialCache.get(k);
+}
+const loader=new GLTFLoader();
+loader.load('./NHA_V20_CUTAWAY_CO_NOI_THAT.glb',gltf=>{
+ model=gltf.scene;
+ // The source PDF CAD is Z-up. GLB preserves Z-up; Three.js camera expects Y-up.
+ // Rotate ONCE at root: x->x, z(height)->y, y(width)->6-z.
+ model.rotation.x=-Math.PI/2;
+ model.position.z=6;
+ model.updateMatrixWorld(true);
+ scene.add(model);
+ model.traverse(obj=>{if(obj.isMesh){const name=obj.name||obj.parent?.name||'';let f=meshFloor(obj); if(f<0){const m=(obj.parent?.name||'').match(/^F([0-3])__/);f=m?+m[1]:0} obj.userData.floor=f;obj.userData.category=meshCategory(obj);obj.userData.originalY=obj.position.y;obj.userData.originalZ=obj.position.z;obj.frustumCulled=false;
+ const category=obj.userData.category;
+ finishArchitecturalMaterial(obj,category);
+ if(obj.material){
+    if(!obj.material.userData.v20Adjusted){
+      obj.material.userData.v20Adjusted=true;
+      const metallic=['BRASS','HANDLE','FRAME','RAILING','LIFT','BATH_FITTING','KITCHEN_FIXTURE','STAIR_RAIL','METAL'].some(n=>category.includes(n));
+      const satin=['TEXTILE','SOFA','BED','CURTAIN','RUG','CHAIR','WARDROBE'].includes(category);
+      const polished=['FINISH','FINISH_V20','MIRROR','COUNTER','BATH'].includes(category);
+      obj.material.roughness=obj.material.map?obj.material.roughness:(metallic?.27:(satin?.90:(polished?.36:.72)));
+      obj.material.metalness=metallic?.36:0.02;
+      obj.material.envMapIntensity=.6;
+      obj.material.needsUpdate=true;
+    }
+ }
+ obj.receiveShadow=true;
+ obj.castShadow=['SHELL','CORE','BATH_WALL','SOFA','BED','CABINET','WARDROBE','DINING','COFFEE','CHAIR','BALCONY','STRUCTURE'].includes(category);
+ if(['SHELL','SHELL_NEAR','CORE','BATH_WALL','CABINET','WARDROBE','DOOR','LIFT','MEDIA','SLAB','BALCONY'].includes(obj.userData.category)){
+  const edge=new THREE.LineSegments(new THREE.EdgesGeometry(obj.geometry,45),new THREE.LineBasicMaterial({color:0x34434a,transparent:true,opacity:.50,depthTest:true,depthWrite:false}));
+  edge.renderOrder=1;obj.add(edge);
+ }
+ meshes.push(obj)}});
+ console.log('V20 loaded',meshes.length,'meshes',new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3()).toArray());
+ loading.remove();resetCamera();
+},evt=>{if(evt.total){loading.querySelector('span').textContent='Đang tải GLB · '+Math.round(evt.loaded*100/evt.total)+'%'}},err=>{console.error(err);loading.classList.add('error');loading.querySelector('strong').textContent='Không tải được mô hình GLB';loading.querySelector('span').textContent='Hãy mở website bằng Safari/Chrome qua HTTPS, không mở riêng file HTML trong Messenger.'});
+let last=performance.now();function animate(now){const dt=Math.min(.06,(now-last)/1000);last=now; if(walking){const f=-step.z+(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0),right=step.x+(keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0),mag=Math.max(1,Math.hypot(f,right));const dx=(-Math.cos(yaw)*f+Math.sin(yaw)*right)*dt*2.1/mag,dz=(Math.sin(yaw)*f+Math.cos(yaw)*right)*dt*2.1/mag;walkPos.x=Math.max(.3,Math.min(18.6,walkPos.x+dx));walkPos.z=Math.max(.4,Math.min(5.6,walkPos.z+dz));camera.position.copy(walkPos);camera.lookAt(walkPos.x-Math.cos(yaw)*Math.cos(pitch),walkPos.y+Math.sin(pitch),walkPos.z+Math.sin(yaw)*Math.cos(pitch))}else controls.update(); renderer.render(scene,camera);positionDimensions();requestAnimationFrame(animate)}requestAnimationFrame(animate);
+</script>
+</body></html>
