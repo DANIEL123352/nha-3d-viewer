@@ -6,6 +6,10 @@ const orbitHost=document.createElement('div');orbitHost.id='v16OrbitHost';stage.
 const dimsCanvas=document.createElement('canvas');dimsCanvas.id='v16Dimensions';stage.appendChild(dimsCanvas);
 const dimsCtx=dimsCanvas.getContext('2d');
 let orbitMode='all',shellClosed=true,showSite=false,revealStairs=false,showDims=false,measurePreset='main';
+let classicLook=true; // default: original 3D exploded architectural presentation, not the sealed V16 box.
+const EXPLODE_GAP=.73;
+let classicLabels=null;
+
 let orbit={az:1.04,alt:.73,dist:31,target:new THREE.Vector3(9.5,6.2,3)};
 let roofGroup,siteGroup;
 const pointerMap=new Map();
@@ -256,7 +260,7 @@ function frame(now){
      camera.lookAt(orbit.target);
    }
    renderer.render(scene,camera);
-   if(!active)drawV16Dimensions();
+   if(!active){drawV16Dimensions();positionClassicLabels();}
  }
  requestAnimationFrame(frame);
 }
@@ -275,18 +279,19 @@ function spot(name){
  document.querySelectorAll('#fpSpots [data-spot]').forEach(b=>b.style.background=b.dataset.spot===name?'#cae4f4':'#fff');
 }
 function show(){
+ floorGroups.forEach(g=>g.position.y=0);roofGroup.position.y=0;
  if(!window.houseGeomForFPS){status.textContent='Dữ liệu mô hình gốc chưa sẵn sàng';return;}
  if(!setup())return;
  active=true;document.body.classList.add('fp-active');spots.style.display='flex';
  container.prepend(renderer.domElement);
  camera.fov=77;camera.updateProjectionMatrix();
  setFloor(floor);spot(floor===0?'living':floor===1?'bed2':'terrace');
- window.v16Resize();
+ updateClassicStyle();window.v16Resize();
 }
 function hide(){
  active=false;document.body.classList.remove('fp-active');spots.style.display='none';
  orbitHost.appendChild(renderer.domElement);camera.fov=57;camera.updateProjectionMatrix();
- setOrbitMode(orbitMode);window.v16Resize();
+ setOrbitMode(orbitMode);updateClassicStyle();window.v16Resize();
 }
 enter.addEventListener('click',show);exit.addEventListener('click',hide);
 document.querySelectorAll('#fpToolbar [data-level]').forEach(b=>b.addEventListener('click',()=>setFloor(Number(b.dataset.level))));
@@ -300,16 +305,89 @@ function drawV16Dimensions(){
  dimsCtx.clearRect(0,0,w,h);
  if(!showDims||!window.HOUSE_DIMENSIONS_V15)return;
  const project=p=>{
-  const v=new THREE.Vector3(p.x,p.z,p.y).project(camera);
+  let offset=0;
+  if(classicLook && (orbitMode==='all'||orbitMode==='site') && measurePreset!=='levelMarks'){
+    const sourceY=p.z;
+    if(sourceY>=elevations[2]-.28 && sourceY<11.50)offset=2*EXPLODE_GAP;
+    else if(sourceY>=elevations[1]-.28 && sourceY<elevations[2]-.28)offset=EXPLODE_GAP;
+    else if(sourceY>=11.50)offset=3*EXPLODE_GAP;
+  }
+  const v=new THREE.Vector3(p.x,p.z+offset,p.y).project(camera);
   return {x:(v.x+1)*w/2,y:(1-v.y)*h/2};
  };
  window.HOUSE_DIMENSIONS_V15.draw({ctx:dimsCtx,proj:project,
    P:(x,y,z)=>({x,y,z}),selected:measurePreset,w,h});
 }
+
+function createClassicLabels(){
+ const wrapper=document.createElement('div');wrapper.id='v17ClassicLabels';
+ const items=[
+  ['BẾP / BÀN ĂN',0,3.0,2.7,.48],['PHÒNG KHÁCH',0,15.6,2.65,.48],
+  ['PHÒNG NGỦ 1',1,2.55,3.4,.62],['PHÒNG NGỦ 2',1,15.95,2.9,.62],
+  ['PHÒNG NGỦ 3',2,2.65,3.4,.62],['SÂN THƯỢNG',2,15.6,2.8,.55],
+  ['THANG MÁY',1,9.15,4.37,2.70],['MÁI TUM',3,8.8,4.05,11.94]
+ ];
+ for(const [label,floorNum,x,z,h] of items){
+  const el=document.createElement('div');el.className='v17Label';el.textContent=label;
+  wrapper.appendChild(el);
+ }
+ stage.appendChild(wrapper);classicLabels={wrapper,items};
+}
+function positionClassicLabels(){
+ if(!classicLabels || !camera || !renderer)return;
+ const enabled=classicLook && !active;
+ const wrapper=classicLabels.wrapper;
+ wrapper.style.display=enabled?'block':'none';
+ if(!enabled)return;
+ const rec=orbitHost.getBoundingClientRect();
+ if(!rec.width||!rec.height)return;
+ const occupied=[];
+ [...wrapper.children].forEach((el,index)=>{
+  const [label,floorNum,x,z,h]=classicLabels.items[index];
+  const show=floorNum===3?(orbitMode==='all'||orbitMode==='site'||orbitMode==='roof'):
+    (orbitMode==='all'||orbitMode==='site'||orbitMode==='roof'||orbitMode===['ground','first','terrace'][floorNum]);
+  if(!show){el.style.display='none';return;}
+  let height=floorNum===3?h+(orbitMode==='all'||orbitMode==='site'?3*EXPLODE_GAP:0):
+    elevations[floorNum]+h+((orbitMode==='all'||orbitMode==='site')?floorNum*EXPLODE_GAP:0);
+  const pos=new THREE.Vector3(x,height,z).project(camera);
+  let sx=(pos.x+1)*rec.width/2,sy=(1-pos.y)*rec.height/2;
+  if(pos.z>1 || sx<12||sx>rec.width-12||sy<45||sy>rec.height-22){el.style.display='none';return;}
+  const width=label.length*7.1+15;
+  if(occupied.some(q=>Math.abs(q.x-sx)<(q.w+width)/2+7 && Math.abs(q.y-sy)<27)){
+   el.style.display='none';return;
+  }
+  occupied.push({x:sx,y:sy,w:width});
+  el.style.display='block';
+  el.style.left=Math.round(sx)+'px';el.style.top=Math.round(sy)+'px';
+ });
+}
+function updateClassicStyle(){
+ const exploded=classicLook && !active && (orbitMode==='all'||orbitMode==='site');
+ floorGroups.forEach((g,i)=>{g.position.y=exploded?i*EXPLODE_GAP:0;});
+ roofGroup.position.y=exploded?3*EXPLODE_GAP:0;
+ // Presentation view uses the older architectural cutaway, but every bar is still a real WebGL mesh.
+ // FPS always restores real floor elevations and the enclosure walls.
+ shellGroups.forEach((g,i)=>{
+  if(active){g.position.y=0;g.visible=i===floor;return;}
+  g.position.y=0;
+  g.visible=!classicLook && shellClosed && (orbitMode==='all'||orbitMode==='site'||orbitMode==='roof');
+ });
+ const title=document.getElementById('floorLabel');
+ if(title && orbitMode==='all' && !active)title.textContent=classicLook?'Toàn nhà · 3 tầng tách lớp':'Toàn nhà · 3D khối kín';
+ const btn=document.getElementById('v17StyleToggle');
+ if(btn){btn.textContent=classicLook?'Kiểu 3D cũ ✓':'Kiểu nhà kín ✓';
+   btn.classList.toggle('toggle-on',classicLook);}
+ const shellButton=document.getElementById('v16ShellToggle');
+ if(shellButton){shellButton.style.display=classicLook?'none':'';}
+ const badge=document.getElementById('v16Badge');
+ if(badge)badge.textContent=(classicLook?'3D CŨ · WEBGL':'3D KHỐI KÍN')+' · '+
+  (orbitMode==='all'?'Toàn bộ':orbitMode==='site'?'Sân đất':orbitMode==='roof'?'Mái tum':orbitMode);
+ positionClassicLabels();
+}
 function setOrbitMode(md){
  orbitMode=md;
  const title=document.getElementById('floorLabel');
- if(title)title.textContent=md==='all'?'Toàn nhà · 3D khối kín':md==='site'?'Khu đất · Mô phỏng ranh đất':md==='roof'?'Mái tum · KT09':md==='ground'?'Tầng trệt · KT06':md==='first'?'Lầu 1 · KT07':'Sân thượng · KT08';
+ if(title)title.textContent=md==='all'?(classicLook?'Toàn nhà · 3 tầng tách lớp':'Toàn nhà · 3D khối kín'):md==='site'?'Khu đất · Mô phỏng ranh đất':md==='roof'?'Mái tum · KT09':md==='ground'?'Tầng trệt · KT06':md==='first'?'Lầu 1 · KT07':'Sân thượng · KT08';
  floorGroups.forEach((g,i)=>g.visible=md==='all'||md==='site'||md==='roof'||md===['ground','first','terrace'][i]);
  shellGroups.forEach((g,i)=>g.visible=shellClosed && (md==='all'||md==='site'||md==='roof'));
  roofGroup.visible=md==='all'||md==='site'||md==='roof';
@@ -321,8 +399,9 @@ function setOrbitMode(md){
  else if(md==='roof')orbit.dist=26;
  else if(md==='all')orbit.dist=31;
  else orbit.dist=23;
+ updateClassicStyle();
  if(document.getElementById('v16Badge'))document.getElementById('v16Badge').textContent=
-    '3D KHỐI KÍN · '+(md==='all'?'Toàn bộ':md==='site'?'Sân đất':md==='roof'?'Mái tum':md);
+    (classicLook?'3D CŨ · WEBGL · ':'3D KHỐI KÍN · ')+(md==='all'?'Toàn bộ':md==='site'?'Sân đất':md==='roof'?'Mái tum':md);
 }
 function refreshV16FloorGeometry(){
  for(let i=0;i<3;i++){
@@ -333,7 +412,7 @@ function refreshV16FloorGeometry(){
   old.traverse(o=>{if(o.geometry)o.geometry.dispose()});
   scene.remove(old);
  }
- setOrbitMode(orbitMode);
+ setOrbitMode(orbitMode);updateClassicStyle();
 }
 function bindOrbitControls(){
  document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{if(!active)setOrbitMode(b.dataset.mode)}));
@@ -350,12 +429,14 @@ function bindOrbitControls(){
  document.getElementById('measurePreset')?.addEventListener('change',()=>queueMicrotask(()=>{
   measurePreset=document.getElementById('measurePreset').value;
   showDims=true;
+  if(measurePreset==='levelMarks' && classicLook)classicLook=false;
+
   const ps=window.HOUSE_DIMENSIONS_V15?.presets.find(x=>x.id===measurePreset);
   if(!ps)return;
   setOrbitMode(ps.view);
   shellClosed=false;shellGroups.forEach(g=>g.visible=false);
   if(ps.focus)orbit.target.set(ps.focus.x,ps.focus.z,ps.focus.y);
-  orbit.dist=Math.max(5.5,30/(ps.zoom||1));
+  orbit.dist=Math.max(5.5,30/(ps.zoom||1));updateClassicStyle();
  }));
  const slider=document.getElementById('angleRange');
  if(slider)slider.addEventListener('input',()=>{orbit.az=Number(slider.value)*Math.PI/180});
@@ -368,6 +449,18 @@ function bindOrbitControls(){
    shellGroups.forEach((g,i)=>g.visible=shellClosed&&(orbitMode==='all'||orbitMode==='site'||orbitMode==='roof'));
  });
  document.getElementById('scriptControls')?.appendChild(button);
+ const toggle=document.createElement('button');toggle.type='button';toggle.id='v17StyleToggle';
+ toggle.className='toggle-on';
+ toggle.textContent='Kiểu 3D cũ ✓';
+ toggle.title='Chuyển qua lại giữa phối cảnh cũ tách tầng và phối cảnh nhà kín. Các tính năng V16 được giữ nguyên.';
+ toggle.addEventListener('click',()=>{
+   classicLook=!classicLook;
+   updateClassicStyle();
+   if(classicLook && orbitMode==='all')orbit.dist=29;
+ });
+ // Show switch prominently before the enclosing-wall button.
+ button.insertAdjacentElement('beforebegin',toggle);
+
  const badge=document.createElement('span');badge.id='v16Badge';
  badge.textContent='3D KHỐI KÍN · Toàn bộ';
  document.getElementById('scriptControls')?.appendChild(badge);
@@ -377,6 +470,8 @@ function bindOrbitControls(){
 if(setup()){
  hide();
  bindOrbitControls();
+ createClassicLabels();
  document.body.classList.add('v16-ready');
  setOrbitMode('all');
+ orbit.az=.85;orbit.alt=.72;orbit.dist=30;updateClassicStyle();
 }
