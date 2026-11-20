@@ -220,6 +220,25 @@ body.fp-active #stage > #scene,body.fp-active #stage > #overlay,body.fp-active #
 body.fp-active #fpSpots{display:flex!important}
 body.fp-active #fpEnter{background:#174f77!important;color:#fff!important}
 @media(max-width:650px){#fpToolbar button{font-size:10px;padding:6px 5px}#fpHint{top:99px;font-size:10px}}
+
+.measureSelector{flex:1 1 100%;display:flex;align-items:center;flex-wrap:wrap;gap:8px;border:1px solid #c2d6e4;border-radius:10px;background:#edf5fa;padding:10px;margin-top:7px}
+.measureSelector label{min-width:175px;font-size:13px;color:#214d69}
+.measureSelector select{flex:2 1 215px;min-width:195px;height:42px;border:1px solid #9db9cd;color:#173a57;background:white;border-radius:8px;padding:8px 10px;font-weight:700;max-width:100%;font-size:12px}
+#measureDesc,#measureWarning{flex:1 1 100%;font-size:12px;color:#49677b;line-height:1.5}
+#measureWarning{color:#866234;font-size:11px}
+#preciseDimensionTable{background:#f5f9fc;border:1px solid #d2e2ed;border-radius:10px;padding:12px;margin-bottom:12px}
+#preciseDimensionTable h3{margin:0 0 8px;font-size:16px;color:#1a4b70}
+#preciseDimensionTable .dimNote{font-size:12px;line-height:1.55;color:#526a80;margin:6px 0 10px}
+#preciseDimensionTable .measureSummary{font-size:12px;font-weight:750;margin:11px 0;color:#215b7f}
+#preciseDimensionTable details{background:white;border:1px solid #d6e3ed;border-radius:8px;margin:7px 0;overflow:hidden}
+#preciseDimensionTable summary{font-size:12px;font-weight:750;padding:10px 12px;color:#164464;cursor:pointer}
+#preciseDimensionTable summary small{font-weight:500;color:#54728c}
+#preciseDimensionTable details>p{padding:0 12px;color:#627588;font-size:11px;line-height:1.4}
+#preciseDimensionTable table{width:100%;border-collapse:collapse;font-size:11px}
+#preciseDimensionTable td,#preciseDimensionTable th{padding:8px;border-bottom:1px solid #e3edf3;text-align:left}
+#preciseDimensionTable th{background:#edf5fa}
+#preciseDimensionTable .dim-measure{font-weight:800;color:#225274;white-space:nowrap}
+@media(max-width:680px){.measureSelector{gap:6px;padding:8px}.measureSelector label{font-size:12px;min-width:120px}.measureSelector select{min-width:180px;font-size:12px}}
 </style></head><body>
 <div class="wrap">
 <header><div><h1>Nhà 3D · Có nút xoay trên iPhone</h1><p>Có thang máy giữa cầu thang bộ<br>Đối chiếu bản vẽ KT01, KT06–KT10 và KT12</p></div><span class="brand">V14 · CÙNG MÔ HÌNH</span></header>
@@ -258,7 +277,7 @@ body.fp-active #fpEnter{background:#174f77!important;color:#fff!important}
 </div><div id="overlay"><div id="floorLabel">Cả nhà · Xem được cả khi không chạy JavaScript</div><div id="dim" class="tiny">6.000 × 18.850 mm</div><div class="tiny">Bề ngang: 6.000 mm · Lõi thang có máy</div></div><div id="help">Nếu không vuốt được, dùng Xoay trái/phải bên dưới</div></div>
 </section>
 <div id="fpSpots" style="display:none;padding:12px;background:#f4f8fa;gap:7px;flex-wrap:wrap"><b style="width:100%;font-size:12px">Chọn điểm tham quan trong cùng mô hình:</b><button type="button" data-spot="living">Phòng khách</button><button type="button" data-spot="kitchen">Bếp</button><button type="button" data-spot="bed1">Ngủ 1</button><button type="button" data-spot="bed2">Ngủ 2</button><button type="button" data-spot="bed3">Ngủ 3</button><button type="button" data-spot="wcRear">WC sau</button><button type="button" data-spot="wcFront">WC trước</button><button type="button" data-spot="terrace">Sân thượng</button><button type="button" data-spot="hall">Lõi thang</button></div>
-<aside class="panel right"><h2>Thông số chính</h2><p><a href="#kich-thuoc-chi-tiet" style="font-weight:750;color:#145781">Xem bảng chi tiết 67 mục và nguồn KT ↓</a></p>
+<aside class="panel right"><h2>Thông số chính</h2><p><a href="#kich-thuoc-chi-tiet" style="font-weight:750;color:#145781">Xem bảng chi tiết bảng đo từng đoạn và nguồn KT ↓</a></p>
 <div class="fact"><span>Chiều ngang A–B</span><b>6.000 mm</b></div><div class="fact"><span>Chiều dài trục 1–4</span><b>18.850 mm</b></div><div class="fact"><span>Nhịp 1–2 (sau)</span><b>7.000 mm</b></div><div class="fact"><span>Nhịp 2–3 (thang)</span><b>4.150 mm</b></div><div class="fact"><span>Nhịp 3–4 (trước)</span><b>7.700 mm</b></div><div class="fact"><span>Rộng lõi thang</span><b>2.450 mm</b></div><div class="fact"><span>Ô thang máy ghi trên KT12</span><b>1.340 × 850 mm</b></div><div class="fact"><span>Ban công trên mặt bằng</span><b>1.400 mm</b></div><div class="fact"><span>Sân/bậc trước</span><b>3.000 mm</b></div><div class="fact"><span>Sân trước trên KT01</span><b>10.100 mm</b></div>
 <div class="warning"><b>Giới hạn cần biết:</b> Kích thước trục lấy từ các số ghi trên PDF. Nội thất và kích thước đồ dùng chỉ minh họa; vị trí, tường, cửa, ô kỹ thuật và chiều cao cần kiểm tra CAD gốc. KT10 và KT11 mâu thuẫn cao độ: hiện mô hình tạm dùng KT10, không phải hồ sơ thi công. Mái tum đã sửa theo KT09; thiết bị mái là mô phỏng.</div></aside>
 </div>
@@ -363,13 +382,17 @@ body.fp-active #fpEnter{background:#174f77!important;color:#fff!important}
 <p class="footer">Giải thích ký hiệu: khuôn nhà và các nhịp chính lấy theo bản vẽ; đồ đạc, hình dáng hộp thang trong phối cảnh chỉ để định vị. KT01: tổng thể, KT06: tầng trệt, KT07: lầu 1, KT08: sân thượng, KT09: mái, KT10: mặt đứng, KT12: chi tiết thang. Phần sân đất được mô phỏng sơ đồ vì góc ranh đất xiên chưa có đủ tọa độ; đây không phải hồ sơ CAD hoặc bản vẽ thi công.</p>
 </form>
 </div>
+<script src="dimensions_v15.js?v=15"></script>
 <script>
 'use strict';
+// Ensure the group selector exists before attaching the old 3D controls.
+window.HOUSE_DIMENSIONS_V15?.init();
 const GEOM={width:6,rear:7,core:4.15,front:7.7,lotAfter:1,steps:3,frontYard:10.10,
  floors:[{name:'Tầng trệt',z:0.8,code:'ground'}, {name:'Lầu 1',z:4.7,code:'first'}, {name:'Tầng sân thượng',z:8.3,code:'terrace'}]};
 const palette={site:'#cdd7dd',yard:'#d1e3d2',step:'#c7b9a7',living:'#bfd7e7',kitchen:'#a6d0c6',bed:'#d4dfca',core:'#e8c599',terrace:'#ead9ad',wc:'#d8d3e8',wall:'#f5f2e9',walllow:'#dbd8ce',door:'#8caec7',edge:'#667684',lift:'#87b8cb',tread:'#d3b389',roof:'#d1d4d6',fixture:'#9d968c'};
 let mode='all',showSite=false,explode=true,yaw=-0.72,elev=0.65,zoom=1,showFurniture=true,showDimOnModel=false;
 let showStairDetails=false;
+let measurePreset='main';
 const canvas=document.querySelector('#scene'), ctx=canvas.getContext('2d',{alpha:false});
 const DPR=Math.min(window.devicePixelRatio||1,3), coords={scale:1,mx:0,my:0}, allFaces=[], labels=[];
 const P=(x,y,z)=>({x,y,z});
@@ -604,7 +627,15 @@ function render(){
  pAll.forEach(p=>{let q=raw(p);bounds.a=Math.min(bounds.a,q.x);bounds.b=Math.max(bounds.b,q.x);bounds.c=Math.min(bounds.c,q.y);bounds.d=Math.max(bounds.d,q.y)});
  const scale=Math.min((w-40)/Math.max(7,bounds.b-bounds.a),(h-70)/Math.max(5,bounds.d-bounds.c))*zoom;
  coords.scale=scale;
- const ox=w/2-(bounds.b+bounds.a)/2*scale,oy=h/2+(bounds.c+bounds.d)/2*scale;
+   let ox=w/2-(bounds.b+bounds.a)/2*scale,oy=h/2+(bounds.c+bounds.d)/2*scale;
+  if(showDimOnModel && window.HOUSE_DIMENSIONS_V15){
+    const currentPreset=window.HOUSE_DIMENSIONS_V15.presets.find(p=>p.id===measurePreset);
+    if(currentPreset && currentPreset.focus){
+      const q=raw(P(currentPreset.focus.x,currentPreset.focus.y,currentPreset.focus.z));
+      ox=w/2-q.x*scale;
+      oy=h/2+q.y*scale;
+    }
+  }
  const proj=p=>{let q=raw(p);return {x:ox+q.x*scale,y:oy-q.y*scale,d:q.d}};
  const zsort=allFaces.map((f,i)=>({f,i,d:(f.pts||f.line).reduce((acc,p)=>acc+raw(p).d,0)/(f.pts||f.line).length})).sort((a,b)=>a.d-b.d);
  ctx.lineJoin='round';
@@ -623,9 +654,12 @@ function render(){
    let x=(p1.x+p2.x)/2,y=(p1.y+p2.y)/2+12;
    ctx.fillStyle='#214666';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText(t,x,y);
  }
- if(showDimOnModel){dimension(0,7,'7.000');dimension(7,11.15,'4.150');dimension(11.15,18.85,'7.700');}
- if(showDimOnModel && (showSite||mode==='site')){dimension(18.85,21.85,'3.000');dimension(21.85,31.95,'10.100');}
- // Labels are drawn after polygons to stay readable on mobile.
+   // V15: dimensional chains are placed at their actual x/y/z coordinates;
+  // a short segment may become a numbered marker, with the source mm in the detail table.
+  if(showDimOnModel && window.HOUSE_DIMENSIONS_V15){
+    window.HOUSE_DIMENSIONS_V15.draw({ctx,proj,P,selected:measurePreset,w,h});
+  }
+// Labels are drawn after polygons to stay readable on mobile.
  let rendered=[];
  for(let l of labels){
    let p=proj(P(l.x,l.y,l.z));if(p.x < 12||p.x>w-12||p.y<8||p.y>h-8)continue;
@@ -656,7 +690,30 @@ document.querySelector('#turnLeft').addEventListener('click',()=>{yaw-=Math.PI/6
 document.querySelector('#turnRight').addEventListener('click',()=>{yaw+=Math.PI/6;render()});
 document.querySelector('#stairVisualToggle').addEventListener('click',()=>{showStairDetails=!showStairDetails;const b=document.querySelector('#stairVisualToggle');b.textContent='Bậc thang: '+(showStairDetails?'Hiện':'Ẩn');b.classList.toggle('toggle-on',showStairDetails);render();});
 document.querySelector('#furnitureToggle').addEventListener('click',()=>{showFurniture=!showFurniture;const b=document.querySelector('#furnitureToggle');b.textContent='Nội thất: '+(showFurniture?'Hiện':'Ẩn');b.classList.toggle('toggle-on',showFurniture);render();});
-document.querySelector('#dimToggle').addEventListener('click',()=>{showDimOnModel=!showDimOnModel;const b=document.querySelector('#dimToggle');b.textContent='Thước đo 3D: '+(showDimOnModel?'Bật':'Tắt');b.classList.toggle('toggle-on',showDimOnModel);render();});
+
+  function selectMeasurementGroup(id,resetView=true){
+    const api=window.HOUSE_DIMENSIONS_V15;
+    if(!api)return;
+    const ps=api.presets.find(x=>x.id===id)||api.presets[0];
+    measurePreset=ps.id;
+    document.getElementById('measurePreset').value=ps.id;
+    document.getElementById('measureDesc').textContent=ps.source+': '+ps.desc;
+    showDimOnModel=true;
+    const btn=document.getElementById('dimToggle');
+    btn.textContent='Thước đo 3D: Bật';btn.classList.add('toggle-on');
+    if(resetView && mode!==ps.view)setMode(ps.view);
+    if(resetView){
+      if(ps.id==='levelMarks')explode=false; // only true 3D heights, not separated/exploded floors
+      zoom=ps.zoom||1;
+      if(mode==='all' && ps.id!=='levelMarks')explode=true;
+    }
+    render();
+  }
+  document.getElementById('measurePreset').addEventListener('change',e=>selectMeasurementGroup(e.target.value));
+  const originalDimButton=document.getElementById('dimToggle');
+  // Expose grouped measurements without hiding the original dimension toggle.
+  window.selectMeasurementGroup=selectMeasurementGroup;
+document.querySelector('#dimToggle').addEventListener('click',()=>{showDimOnModel=!showDimOnModel;const b=document.querySelector('#dimToggle');b.textContent='Thước đo 3D: '+(showDimOnModel?'Bật':'Tắt');b.classList.toggle('toggle-on',showDimOnModel);if(showDimOnModel&&measurePreset==='levelMarks'){mode='all';explode=false;}render();});
 document.querySelector('#siteToggle').addEventListener('click',()=>{showSite=!showSite;document.querySelector('#siteToggle').classList.toggle('active',showSite);render()});
 let pointers=new Map(), pinch=0;
 canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});pinch=0});
